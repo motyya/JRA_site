@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - JRA</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="../images/jra_logo_no_bg.png" alt="JRA Logo">
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">About</a></li>
+                    <li><a href="races.html">Races</a></li>
+                    <li><a href="horses.html">Horses</a></li>
+                    <li><a href="race-entry.html">Race Entry</a></li>
+                    <li class="login-link"><a href="login.html">Jockey Login</a></li>
+                    <li class="user-link" style="display: none;">
+                        <a href="user.html" class="user-profile-link">
+                            <span class="user-name">User</span>
+                        </a> | 
+                        <a href="#" id="logoutLink" class="logout-link">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>My Jockey Profile</h1>
+                <div class="profile-info" id="profileInfo">
+                    <p>Loading profile...</p>
+                </div>
+            </div>
+
+            <div class="favorites-section">
+                <div class="favorites-tabs">
+                    <button class="tab-button active" data-tab="horses">Favorite Horses</button>
+                    <button class="tab-button" data-tab="races">Favorite Races</button>
+                    <button class="tab-button" data-tab="racecourses">Favorite Racecourses</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="horses-tab" class="tab-pane active">
+                        <div class="favorites-list" id="favoriteHorses">
+                            <p>Loading favorite horses...</p>
+                        </div>
+                    </div>
+                    <div id="races-tab" class="tab-pane">
+                        <div class="favorites-list" id="favoriteRaces">
+                            <p>No favorite races yet.</p>
+                        </div>
+                    </div>
+                    <div id="racecourses-tab" class="tab-pane">
+                        <div class="favorites-list" id="favoriteRacecourses">
+                            <p>No favorite racecourses yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>

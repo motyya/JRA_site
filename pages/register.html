@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - JRA</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header with navigation - MATCHING OTHER PAGES -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="../images/jra_logo_no_bg.png" alt="JRA Logo">
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">About</a></li>
+                    <li><a href="races.html">Races</a></li>
+                    <li><a href="horses.html">Horses</a></li>
+                    <li><a href="race-entry.html">Race Entry</a></li>
+                    <li class="login-link"><a href="login.html">Jockey Login</a></li>
+                    <li class="user-link" style="display: none;">
+                        <a href="user.html" class="user-profile-link">
+                            <span class="user-name">User</span>
+                        </a> | 
+                        <a href="#" id="logoutLink" class="logout-link">Logout</a>
+                    </li>
+                    <li><button id="sidebar-toggle" class="hamburger-menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar for additional navigation - ADDED -->
+    <aside id="sidebar" class="sidebar">
+        <button id="sidebar-close" class="close-btn">&times;</button>
+        <ul>
+            <li><a href="racecourses.html">Racecourses</a></li>
+            <li><a href="training_centers.html">Training centers</a></li>
+            <li><a href="glossary.html">Glossary</a></li>
+            <li><a href="jockeys.html">For Jockeys</a></li>
+            <li><a href="race-entry.html">Race Entry Form</a></li>
+            <li><a href="login.html">Jockey Login</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main content - CENTERED FORM LIKE LOGIN PAGE -->
+    <main>
+        <div class="form-container">
+            <div class="form-card">
+                <h2>Jockey Registration</h2>
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                        <span class="error-message" id="nameError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                        <span class="error-message" id="usernameError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <span class="error-message" id="confirmPasswordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="licenseNumber">Jockey License Number</label>
+                        <input type="text" id="licenseNumber" name="licenseNumber" required>
+                        <span class="error-message" id="licenseError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="../pages/terms.html">JRA Terms and Conditions</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Register</button>
+                    
+                    <div class="form-links">
+                        <a href="login.html">Already have an account? Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer - MATCHING OTHER PAGES -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Your Name</p>
+        </div>
+    </footer>
+
+    <!-- Scripts - IN CORRECT ORDER -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>
