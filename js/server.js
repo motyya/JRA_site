@@ -82,6 +82,11 @@ app.get('/user', (req, res) => {
     res.sendFile(path.join(rootDir, 'pages', 'user.html'));
 });
 
+// NEW: Jockeys Directory route
+app.get('/jockeys-directory', (req, res) => {
+    res.sendFile(path.join(rootDir, 'pages', 'jockeys-directory.html'));
+});
+
 // Training centers redirect
 app.get('/training_centers', (req, res) => {
     res.redirect('/training');
@@ -194,7 +199,7 @@ app.get('/api/horses/:id', (req, res) => {
     });
 });
 
-// Races API
+// Races API - REMOVED STATUS FILTER
 app.get('/api/races', (req, res) => {
     const {
         search,
@@ -203,8 +208,7 @@ app.get('/api/races', (req, res) => {
         season,
         track,
         distance_type,
-        rang,
-        status
+        rang
     } = req.query;
 
     let sql = `
@@ -243,14 +247,6 @@ app.get('/api/races', (req, res) => {
     if (rang) {
         sql += ' AND r.rang = ?';
         params.push(rang);
-    }
-
-    if (status) {
-        if (status === 'upcoming') {
-            sql += ' AND r.status = "upcoming"';
-        } else if (status === 'finished') {
-            sql += ' AND r.status = "finished"';
-        }
     }
 
     // Distance filtering
@@ -363,6 +359,18 @@ app.get('/api/available-races', (req, res) => {
     });
 });
 
+// Available horses for race entry form
+app.get('/api/available-horses', (req, res) => {
+    db.query('SELECT id, name FROM horses ORDER BY name', (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
 // Authentication API
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
@@ -436,21 +444,16 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // Race Entry API
-app.get('/api/available-horses', (req, res) => {
-    db.query('SELECT id, name FROM horses ORDER BY name', (err, results) => {
-        if (err) {
-            console.error('Database error:', err);
-            res.status(500).json({ error: 'Database error' });
-            return;
-        }
-        res.json(results);
-    });
-});
-
 app.post('/api/race-entries', (req, res) => {
     const { jockeyName, licenseNumber, horseId, raceId, saddlecloth, barrier, declaredWeight } = req.body;
     
-    console.log('Race entry submission:', { jockeyName, horseId, saddlecloth });
+    console.log('Race entry submission:', { 
+        jockeyName, 
+        licenseNumber, 
+        horseId, 
+        raceId, 
+        saddlecloth 
+    });
 
     const sql = `INSERT INTO race_entries (jockey_name, license_number, horse_id, race_id, saddlecloth, barrier, declared_weight, status) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`;
@@ -461,7 +464,11 @@ app.post('/api/race-entries', (req, res) => {
             res.status(500).json({ error: 'Database error' });
             return;
         }
-        res.json({ success: true, entryId: results.insertId, message: 'Race entry submitted successfully' });
+        res.json({ 
+            success: true, 
+            entryId: results.insertId, 
+            message: 'Race entry submitted successfully' 
+        });
     });
 });
 
@@ -629,6 +636,154 @@ app.get('/api/user/profile/:userId', (req, res) => {
     });
 });
 
+app.get('/api/user/entries/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    console.log(`📥 GET /api/user/entries/${userId}`);
+    
+    // Get jockey info
+    db.query('SELECT id, name, license_number FROM jockeys WHERE id = ?', [userId], (err, jockeyResults) => {
+        if (err) {
+            console.error('❌ Jockey query error:', err.message);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+        
+        if (jockeyResults.length === 0) {
+            res.status(404).json({ error: 'Jockey not found' });
+            return;
+        }
+        
+        const jockey = jockeyResults[0];
+        console.log(`✅ Found jockey: ${jockey.name}, License: ${jockey.license_number}`);
+        
+        // FIXED QUERY: Use submitted_at instead of created_at
+        const entriesQuery = `
+            SELECT re.*, r.name as race_name, 
+                   h.name as horse_name, rc.name as racecourse_name
+            FROM race_entries re
+            LEFT JOIN races r ON re.race_id = r.id
+            LEFT JOIN horses h ON re.horse_id = h.id
+            LEFT JOIN racecourses rc ON r.racecourse_id = rc.id
+            WHERE re.license_number = ?
+            ORDER BY re.submitted_at DESC
+        `;
+        
+        db.query(entriesQuery, [jockey.license_number], (err, results) => {
+            if (err) {
+                console.error('❌ Race entries query error:', err.message);
+                console.error('❌ SQL error:', err.sql);
+                res.status(500).json({ 
+                    error: 'Database error',
+                    details: err.message 
+                });
+                return;
+            }
+            
+            console.log(`✅ Found ${results.length} race entries`);
+            
+            res.json({
+                success: true,
+                jockey: jockey,
+                entries: results
+            });
+        });
+    });
+});
+
+// Get jockeys with statistics - SIMPLIFIED
+// app.get('/api/jockeys/stats', (req, res) => {
+//     // Get all jockeys with their entry counts - SIMPLIFIED
+//     const sql = `
+//         SELECT 
+//             j.*, 
+//             COUNT(re.id) as total_entries
+//         FROM jockeys j
+//         LEFT JOIN race_entries re ON j.license_number = re.license_number
+//         GROUP BY j.id
+//         ORDER BY j.name ASC
+//     `;
+    
+//     db.query(sql, (err, jockeys) => {
+//         if (err) {
+//             console.error('Database error:', err);
+//             res.status(500).json({ error: 'Database error' });
+//             return;
+//         }
+        
+//         // Calculate overall statistics
+//         const totalEntries = jockeys.reduce((sum, j) => sum + (parseInt(j.total_entries) || 0), 0);
+        
+//         const stats = {
+//             totalJockeys: jockeys.length,
+//             totalEntries: totalEntries
+//         };
+        
+//         res.json({
+//             jockeys: jockeys,
+//             stats: stats
+//         });
+//     });
+// });
+app.get('/api/jockeys/stats', (req, res) => {
+    // First get all jockeys with their entry counts
+    const jockeysSql = `
+        SELECT 
+            j.*, 
+            COUNT(re.id) as total_entries
+        FROM jockeys j
+        LEFT JOIN race_entries re ON j.license_number = re.license_number
+        GROUP BY j.id
+        ORDER BY j.name ASC
+    `;
+    
+    db.query(jockeysSql, (err, jockeys) => {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+        
+        // Get race entries for each jockey
+        const promises = jockeys.map(jockey => {
+            return new Promise((resolve) => {
+                const entriesSql = `
+                    SELECT re.*, r.name as race_name
+                    FROM race_entries re
+                    LEFT JOIN races r ON re.race_id = r.id
+                    WHERE re.license_number = ?
+                    ORDER BY re.submitted_at DESC
+                    LIMIT 10
+                `;
+                
+                db.query(entriesSql, [jockey.license_number], (err, entries) => {
+                    if (err) {
+                        jockey.race_entries = [];
+                    } else {
+                        jockey.race_entries = entries;
+                    }
+                    resolve(jockey);
+                });
+            });
+        });
+        
+        Promise.all(promises).then(completedJockeys => {
+            // Calculate overall statistics
+            const totalEntries = completedJockeys.reduce((sum, j) => sum + (parseInt(j.total_entries) || 0), 0);
+            
+            const stats = {
+                totalJockeys: completedJockeys.length,
+                totalEntries: totalEntries
+            };
+            
+            res.json({
+                jockeys: completedJockeys,
+                stats: stats
+            });
+        });
+    });
+});
+
 // 404 handler for API routes
 app.use(/\/api\/.*/, (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
@@ -650,6 +805,7 @@ app.listen(port, () => {
     console.log('  - http://localhost:3000/training');
     console.log('  - http://localhost:3000/racecourses');
     console.log('  - http://localhost:3000/jockeys');
+    console.log('  - http://localhost:3000/jockeys-directory');
     console.log('  - http://localhost:3000/login');
     console.log('  - http://localhost:3000/register');
     console.log('  - http://localhost:3000/race-entry');

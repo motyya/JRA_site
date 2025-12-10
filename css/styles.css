@@ -268,6 +268,7 @@ header {
 .sidebar li:nth-child(4) { animation-delay: 0.4s; }
 .sidebar li:nth-child(5) { animation-delay: 0.5s; }
 .sidebar li:nth-child(6) { animation-delay: 0.6s; }
+.sidebar li:nth-child(7) { animation-delay: 0.7s; }
 
 .sidebar a {
     color: var(--text);
@@ -401,32 +402,6 @@ main {
 
 .filters-sidebar:hover {
     box-shadow: var(--shadow-lg);
-}
-
-/* Calendar button in filters sidebar */
-.calendar-btn {
-    display: block;
-    width: 100%;
-    margin: 0 0 1.5rem 0;
-    padding: 0.875rem 1.25rem;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.calendar-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
 }
 
 /* Search box */
@@ -946,6 +921,34 @@ footer {
     box-shadow: var(--shadow-md);
 }
 
+/* NEW: Tertiary button */
+.btn-tertiary {
+    background: var(--surface);
+    color: var(--text);
+    padding: 0.875rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+}
+
+.btn-tertiary:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 .error-message {
     color: var(--error);
     font-size: 0.8rem;
@@ -1200,6 +1203,24 @@ footer {
     background-color: var(--error);
 }
 
+.status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.approved {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 /* Notification styles */
 .notification {
     position: fixed;
@@ -1309,7 +1330,361 @@ footer {
     to { transform: rotate(360deg); }
 }
 
-/* Responsive design - MOBILE FIRST APPROACH */
+/* ===== JOCKEYS DIRECTORY STYLES ===== */
+.jockeys-container {
+    padding: 2rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-top: 1rem;
+}
+
+.jockeys-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card.large {
+    padding: 1.5rem;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.stat-card.large:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.stat-card.large h3 {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+.stat-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0.5rem 0;
+}
+
+.stat-sub {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.jockeys-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.jockey-card {
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.jockey-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.jockey-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+}
+
+.jockey-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.jockey-header h3 {
+    color: var(--primary);
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.license-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.jockey-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.stat-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stat-value.pending {
+    color: var(--warning);
+}
+
+.stat-value.approved {
+    color: var(--success);
+}
+
+.stat-value.rejected {
+    color: var(--error);
+}
+
+.recent-entries {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.recent-entries h4 {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.recent-entries ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.recent-entries li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.recent-entries li:last-child {
+    border-bottom: none;
+}
+
+.entry-race {
+    color: var(--text);
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.entry-horse {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin: 0 0.5rem;
+    flex-shrink: 0;
+}
+
+.entry-status {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.entry-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.entry-status.approved {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.entry-status.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+}
+
+.jockey-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.join-date {
+    color: var(--text-light);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.no-recent {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+}
+
+/* ===== USER PROFILE ENTRIES STYLES ===== */
+.entries-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.entries-table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--background);
+}
+
+.entries-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.entries-table th {
+    background: var(--surface);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.entries-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.entries-table tr:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.entries-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* Responsive adjustments for form actions */
+@media (min-width: 768px) {
+    .form-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .btn-primary,
+    .btn-secondary,
+    .btn-tertiary {
+        flex: 1;
+        min-width: 200px;
+        margin-top: 0;
+    }
+    
+    .jockeys-grid {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    }
+}
+
+/* ===== EMPTY AND ERROR STATES ===== */
+.empty-state, .error-state, .loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    grid-column: 1 / -1;
+}
+
+.empty-state h3, .error-state h3 {
+    color: var(--text);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.empty-state p, .error-state p, .loading-state p {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1024px) {
     .races-container {
         grid-template-columns: 280px 1fr;
@@ -1438,6 +1813,23 @@ footer {
         font-size: 0.9rem;
     }
     
+    /* Jockeys directory mobile */
+    .jockeys-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .jockeys-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card.large {
+        padding: 1.25rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
     /* Glossary mobile */
     .glossary-content {
         grid-template-columns: 1fr;
@@ -1478,9 +1870,21 @@ footer {
     }
     
     .btn-primary,
-    .btn-secondary {
+    .btn-secondary,
+    .btn-tertiary {
         padding: 0.75rem 1.25rem;
         font-size: 0.95rem;
+    }
+    
+    /* Entries table mobile */
+    .entries-table {
+        min-width: 600px;
+    }
+    
+    .entries-table th,
+    .entries-table td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
     }
     
     /* Sidebar mobile */
@@ -1554,7 +1958,8 @@ footer {
     
     .calendar-btn,
     .btn-primary,
-    .btn-secondary {
+    .btn-secondary,
+    .btn-tertiary {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
     }
@@ -1639,4 +2044,169 @@ footer {
         color: black !important;
         text-decoration: none !important;
     }
+}
+
+/* ===== JOCKEYS DIRECTORY ENHANCED STYLES ===== */
+.jockeys-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Remove the third stat card (Top Jockey) */
+.jockeys-stats .stat-card.large:nth-child(3) {
+    display: none;
+}
+
+.entries-dropdown {
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--background);
+}
+
+.dropdown-toggle {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.dropdown-toggle:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.dropdown-arrow {
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.dropdown-content {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: var(--background);
+}
+
+.entries-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.entry-item {
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+    transition: var(--transition);
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.entry-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateX(3px);
+}
+
+/* Adjust jockey stats to be single column */
+.jockey-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== JOCKEYS DIRECTORY SIMPLIFIED STYLES ===== */
+.jockeys-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* No Top Jockey card needed */
+
+.entries-dropdown {
+    margin-top: 0.5rem;
+}
+
+.dropdown-toggle {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.dropdown-toggle:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.dropdown-arrow {
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.dropdown-content {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    margin-top: -1px;
+}
+
+.entries-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.entry-item {
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border-left: 2px solid var(--primary-light);
+}
+
+.entry-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* Simplify jockey stats */
+.jockey-stats {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
 }

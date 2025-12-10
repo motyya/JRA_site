@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (races.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 2rem;">
+                    <td colspan="7" style="text-align: center; padding: 2rem;">
                         No races found matching your filters.
                     </td>
                 </tr>
@@ -55,18 +55,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${race.track_type}</td>
                 <td>${race.direction}</td>
                 <td>${race.season || '-'}</td>
-                <td><span class="status-badge ${race.status}">${race.status}</span></td>
             `;
             
             tbody.appendChild(row);
         });
     }
 
-    // Filter functionality
+    // Filter functionality - REMOVED STATUS FILTER
     function getFilters() {
-        const activeStatusBtn = document.querySelector('.status-btn.active');
-        const status = activeStatusBtn ? activeStatusBtn.dataset.status : 'all';
-        
         const filters = {
             search: document.getElementById('race-search')?.value || '',
             racecourse: document.getElementById('racecourse')?.value || '',
@@ -84,18 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (distanceFrom) filters.distance_from = distanceFrom;
         if (distanceTo) filters.distance_to = distanceTo;
 
-        // Add status filter only if not "all"
-        if (status !== 'all') {
-            filters.status = status;
-        }
-
         return filters;
     }
 
     // Event listeners
     const searchInput = document.getElementById('race-search');
     const filterInputs = document.querySelectorAll('.filter-group select, .filter-group input');
-    const statusButtons = document.querySelectorAll('.status-btn');
 
     if (searchInput) {
         searchInput.addEventListener('input', () => loadRaces(getFilters()));
@@ -106,18 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (input.type === 'number') {
             input.addEventListener('input', () => loadRaces(getFilters()));
         }
-    });
-
-    // Status buttons
-    statusButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            statusButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            loadRaces(getFilters());
-        });
     });
 
     // Load initial races

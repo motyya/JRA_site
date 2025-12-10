@@ -55,9 +55,7 @@
         
         <div class="races-container">
             <!-- Left sidebar - Filters -->
-            <aside class="filters-sidebar">
-                <button class="calendar-btn" id="calendar-toggle">Show Race Calendar</button>
-                
+            <aside class="filters-sidebar">                
                 <div class="search-box">
                     <input type="text" id="race-search" placeholder="Search by race name or racecourse...">
                 </div>
@@ -147,13 +145,6 @@
                         </select>
                     </div>
                 </div>
-                
-                <!-- Race Status Buttons -->
-                <div class="race-status">
-                    <button class="status-btn active" data-status="all">All</button>
-                    <button class="status-btn" data-status="upcoming">Upcoming</button>
-                    <button class="status-btn" data-status="finished">Finished</button>
-                </div>
             </aside>
             
             <!-- Right content - Races table -->
@@ -168,7 +159,6 @@
                             <th>Track</th>
                             <th>Direction</th>
                             <th>Season</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="races-list">

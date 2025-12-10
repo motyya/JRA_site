@@ -75,6 +75,7 @@ class UserProfile {
             await this.loadFavoriteHorses();
             await this.loadFavoriteRaces();
             await this.loadFavoriteRacecourses();
+            await this.loadRaceEntries(); // NEW: Load race entries
         } catch (error) {
             console.error('Error loading favorites:', error);
         }
@@ -208,6 +209,233 @@ class UserProfile {
             const container = document.getElementById('favoriteRacecourses');
             if (container) {
                 container.innerHTML = '<p>Error loading favorite racecourses</p>';
+            }
+        }
+    }
+
+    // NEW: Load race entries for the user
+    // async loadRaceEntries() {
+    //     try {
+    //         const response = await fetch(`http://localhost:3000/api/user/entries/${this.currentUser.id}`);
+            
+    //         if (!response.ok) {
+    //             console.log('No race entries found or error loading');
+    //             const container = document.getElementById('myRaceEntries');
+    //             if (container) {
+    //                 container.innerHTML = `
+    //                     <div class="empty-state">
+    //                         <h3>No Race Entries Yet</h3>
+    //                         <p>You haven't submitted any race entries.</p>
+    //                         <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
+    //                     </div>
+    //                 `;
+    //             }
+    //             return;
+    //         }
+            
+    //         const data = await response.json();
+    //         console.log('Race entries data:', data);
+            
+    //         const container = document.getElementById('myRaceEntries');
+    //         if (container) {
+    //             if (!data.entries || data.entries.length === 0) {
+    //                 container.innerHTML = `
+    //                     <div class="empty-state">
+    //                         <h3>No Race Entries Yet</h3>
+    //                         <p>You haven't submitted any race entries.</p>
+    //                         <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
+    //                     </div>
+    //                 `;
+    //                 return;
+    //             }
+
+    //             const entries = data.entries;
+    //             const pendingCount = entries.filter(e => e.status === 'pending').length;
+    //             const approvedCount = entries.filter(e => e.status === 'approved').length;
+    //             const rejectedCount = entries.filter(e => e.status === 'rejected').length;
+
+    //             container.innerHTML = `
+    //                 <div class="entries-stats">
+    //                     <div class="stat-card">
+    //                         <h4>Total Entries</h4>
+    //                         <p class="stat-number">${entries.length}</p>
+    //                     </div>
+    //                     <div class="stat-card">
+    //                         <h4>Pending</h4>
+    //                         <p class="stat-number pending">${pendingCount}</p>
+    //                     </div>
+    //                     <div class="stat-card">
+    //                         <h4>Approved</h4>
+    //                         <p class="stat-number approved">${approvedCount}</p>
+    //                     </div>
+    //                     ${rejectedCount > 0 ? `
+    //                     <div class="stat-card">
+    //                         <h4>Rejected</h4>
+    //                         <p class="stat-number rejected">${rejectedCount}</p>
+    //                     </div>
+    //                     ` : ''}
+    //                 </div>
+                    
+    //                 <div class="entries-table-container">
+    //                     <table class="entries-table">
+    //                         <thead>
+    //                             <tr>
+    //                                 <th>Race</th>
+    //                                 <th>Horse</th>
+    //                                 <th>Racecourse</th>
+    //                                 <th>Date</th>
+    //                                 <th>Saddlecloth</th>
+    //                                 <th>Barrier</th>
+    //                                 <th>Weight</th>
+    //                                 <th>Status</th>
+    //                                 <th>Submitted</th>
+    //                             </tr>
+    //                         </thead>
+    //                         <tbody>
+    //                             ${entries.map(entry => `
+    //                                 <tr>
+    //                                     <td><strong>${entry.race_name || 'Unknown Race'}</strong></td>
+    //                                     <td>${entry.horse_name || 'Unknown Horse'}</td>
+    //                                     <td>${entry.racecourse_name || '-'}</td>
+    //                                     <td>${entry.race_date ? new Date(entry.race_date).toLocaleDateString() : '-'}</td>
+    //                                     <td>${entry.saddlecloth}</td>
+    //                                     <td>${entry.barrier}</td>
+    //                                     <td>${entry.declared_weight}kg</td>
+    //                                     <td><span class="status-badge ${entry.status}">${entry.status}</span></td>
+    //                                     <td>${new Date(entry.created_at).toLocaleDateString()}</td>
+    //                                 </tr>
+    //                             `).join('')}
+    //                         </tbody>
+    //                     </table>
+    //                 </div>
+    //             `;
+    //         }
+    //     } catch (error) {
+    //         console.error('Error loading race entries:', error);
+    //         const container = document.getElementById('myRaceEntries');
+    //         if (container) {
+    //             container.innerHTML = '<p>Error loading race entries. Please try again later.</p>';
+    //         }
+    //     }
+    // }
+    async loadRaceEntries() {
+        try {
+            console.log('Loading race entries for user ID:', this.currentUser.id);
+            
+            const response = await fetch(`http://localhost:3000/api/user/entries/${this.currentUser.id}`);
+            
+            if (!response.ok) {
+                console.log('No race entries found or error loading');
+                const container = document.getElementById('myRaceEntries');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Race Entries Yet</h3>
+                            <p>You haven't submitted any race entries.</p>
+                            <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            const data = await response.json();
+            console.log('Race entries data received:', data);
+            
+            const container = document.getElementById('myRaceEntries');
+            if (container) {
+                if (!data.entries || data.entries.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Race Entries Yet</h3>
+                            <p>You haven't submitted any race entries.</p>
+                            <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const entries = data.entries;
+                const pendingCount = entries.filter(e => e.status === 'pending').length;
+                const approvedCount = entries.filter(e => e.status === 'approved').length;
+                const rejectedCount = entries.filter(e => e.status === 'rejected').length;
+
+                container.innerHTML = `
+                    <div class="entries-stats">
+                        <div class="stat-card">
+                            <h4>Total Entries</h4>
+                            <p class="stat-number">${entries.length}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Pending</h4>
+                            <p class="stat-number pending">${pendingCount}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Approved</h4>
+                            <p class="stat-number approved">${approvedCount}</p>
+                        </div>
+                        ${rejectedCount > 0 ? `
+                        <div class="stat-card">
+                            <h4>Rejected</h4>
+                            <p class="stat-number rejected">${rejectedCount}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="entries-table-container">
+                        <table class="entries-table">
+                            <thead>
+                                <tr>
+                                    <th>Race</th>
+                                    <th>Horse</th>
+                                    <th>Racecourse</th>
+                                    <th>Saddlecloth</th>
+                                    <th>Barrier</th>
+                                    <th>Weight</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${entries.map(entry => {
+                                    // Format created_at date
+                                    const submittedDate = entry.created_at 
+                                        ? new Date(entry.created_at).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })
+                                        : 'Unknown';
+                                    
+                                    return `
+                                    <tr>
+                                        <td><strong>${entry.race_name || 'Unknown Race'}</strong></td>
+                                        <td>${entry.horse_name || 'Unknown Horse'}</td>
+                                        <td>${entry.racecourse_name || '-'}</td>
+                                        <td>${entry.saddlecloth || '-'}</td>
+                                        <td>${entry.barrier || '-'}</td>
+                                        <td>${entry.declared_weight ? entry.declared_weight + 'kg' : '-'}</td>
+                                        <td><span class="status-badge ${entry.status || 'pending'}">${entry.status || 'pending'}</span></td>
+                                        <td>${submittedDate}</td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading race entries:', error);
+            const container = document.getElementById('myRaceEntries');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <h3>Error Loading Race Entries</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" class="btn-primary" style="margin-top: 1rem;">Try Again</button>
+                    </div>
+                `;
             }
         }
     }
