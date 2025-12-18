@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glossary - Japan Racing Association</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <!-- Header with navigation -->
     <header>
         <div class="header-container">
             <div class="logo">
-                <img src="../images/jra_logo_no_bg.png" alt="JRA Logo">
+                <img src="/images/jra_logo_no_bg.png" alt="JRA Logo">
             </div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="index.html">About</a></li>
                     <li><a href="races.html">Races</a></li>
                     <li><a href="horses.html">Horses</a></li>
-                    <li><a href="../pages/race-entry.html">Race Entry</a></li>
+                    <li><a href="race-entry.html">Race Entry</a></li>
+                    <li><a href="jockeys-directory.html">Jockeys</a></li>
                     <li class="login-link"><a href="login.html">Jockey Login</a></li>
                     <li class="user-link" style="display: none;">
                         <a href="user.html" class="user-profile-link">
@@ -36,7 +36,6 @@
         </div>
     </header>
 
-    <!-- Sidebar for additional navigation -->
     <aside id="sidebar" class="sidebar">
         <button id="sidebar-close" class="close-btn">&times;</button>
         <ul>
@@ -45,20 +44,17 @@
             <li><a href="glossary.html">Glossary</a></li>
             <li><a href="jockeys.html">For Jockeys</a></li>
             <li><a href="race-entry.html">Race Entry Form</a></li>
+            <li><a href="jockeys-directory.html">Jockeys Directory</a></li>
             <li><a href="login.html">Jockey Login</a></li>
         </ul>
     </aside>
 
-    <!-- Main content area -->
     <main>
         <h1 class="page-title">Glossary</h1>
         
-        <!-- Simple Search Box -->
         <div class="search-box">
             <input type="text" id="glossary-search" placeholder="Search racing terms...">
         </div>
-
-        <!-- Glossary Terms List -->
         <div class="glossary-content">
             <div class="glossary-term">
                 <h3 class="term-title">Allowance Race</h3>
@@ -254,18 +250,17 @@
                 <h3 class="term-title">Tokyo Yushun (Japanese Derby)</h3>
                 <p class="term-definition">The second leg and most prestigious race of the Japanese Triple Crown, a G1 race for three-year-olds run over 2400 meters at Tokyo Racecourse.</p>
             </div>
-        </div>
     </main>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <p>&copy; 2025 Your Name</p>
+            <p>&copy; 2025 Matvey Ilyin</p>
         </div>
     </footer>
-    <script src="../js/auth.js"></script>
-    <script src="../js/script.js"></script>  
-    <script src="../js/glossary.js"></script>
-    
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/script.js"></script>
+    <script src="/js/glossary.js"></script>
 </body>
 </html>

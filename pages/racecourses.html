@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-    <!-- Header with navigation -->
     <header>
         <div class="header-container">
             <div class="logo">
@@ -18,7 +17,8 @@
                     <li><a href="index.html">About</a></li>
                     <li><a href="races.html">Races</a></li>
                     <li><a href="horses.html">Horses</a></li>
-                    <li><a href="../pages/race-entry.html">Race Entry</a></li>
+                    <li><a href="race-entry.html">Race Entry</a></li>
+                    <li><a href="jockeys-directory.html">Jockeys</a></li>
                     <li class="login-link"><a href="login.html">Jockey Login</a></li>
                     <li class="user-link" style="display: none;">
                         <a href="user.html" class="user-profile-link">
@@ -36,7 +36,6 @@
         </div>
     </header>
 
-    <!-- Sidebar for additional navigation -->
     <aside id="sidebar" class="sidebar">
         <button id="sidebar-close" class="close-btn">&times;</button>
         <ul>
@@ -45,23 +44,21 @@
             <li><a href="glossary.html">Glossary</a></li>
             <li><a href="jockeys.html">For Jockeys</a></li>
             <li><a href="race-entry.html">Race Entry Form</a></li>
+            <li><a href="jockeys-directory.html">Jockeys Directory</a></li>
             <li><a href="login.html">Jockey Login</a></li>
         </ul>
     </aside>
 
-    <!-- Main content area -->
     <main>
         <h1 class="page-title">Racecourses</h1>
         
         <div class="races-container">
-            <!-- Left sidebar - Filters -->
             <aside class="filters-sidebar">
                 <div class="search-box">
                     <input type="text" id="racecourse-search" placeholder="Search by racecourse name...">
                 </div>
                 
                 <div class="filters-grid">
-                    <!-- Track Filter -->
                     <div class="filter-group">
                         <label for="track">Track</label>
                         <select id="track">
@@ -71,7 +68,6 @@
                         </select>
                     </div>
                     
-                    <!-- Direction Filter -->
                     <div class="filter-group">
                         <label for="direction">Direction</label>
                         <select id="direction">
@@ -81,7 +77,6 @@
                         </select>
                     </div>
                     
-                    <!-- Distance Filter -->
                     <div class="filter-group">
                         <label for="distance-type">Distance Type</label>
                         <select id="distance-type">
@@ -98,7 +93,6 @@
                         </div>
                     </div>
                     
-                    <!-- Corners Filter -->
                     <div class="filter-group">
                         <label for="corners">Corners</label>
                         <select id="corners">
@@ -117,7 +111,6 @@
                 </div>
             </aside>
             
-            <!-- Right content - Racecourses table -->
             <section class="races-content">
                 <table class="races-table">
                     <thead>
@@ -131,20 +124,19 @@
                         </tr>
                     </thead>
                     <tbody id="racecourses-list">
-                        <!-- Data will be loaded dynamically from API -->
                     </tbody>
                 </table>
             </section>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <p>&copy; 2025 Your Name</p>
+            <p>&copy; 2025 Matvey Ilyin</p>
         </div>
     </footer>
 
+    <script src="../js/config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/racecourses.js"></script>

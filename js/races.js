@@ -1,8 +1,6 @@
-// Races page functionality with API and favorites
 document.addEventListener('DOMContentLoaded', function() {
-    const API_BASE = 'http://localhost:3000/api';
+    const API_BASE = window.CONFIG.API_BASE;
 
-    // Load races from API
     function loadRaces(filters = {}) {
         const queryParams = new URLSearchParams(filters).toString();
         
@@ -10,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(races => {
                 displayRaces(races);
-                // Add favorite buttons after races are loaded
                 setTimeout(() => {
                     if (window.authManager) {
                         window.authManager.addFavoriteButtons();
@@ -19,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error loading races:', error);
-                // Fallback to empty state
                 displayRaces([]);
             });
     }
@@ -61,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Filter functionality - REMOVED STATUS FILTER
     function getFilters() {
         const filters = {
             search: document.getElementById('race-search')?.value || '',
@@ -73,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
             rang: document.getElementById('rang')?.value || ''
         };
 
-        // Add distance range filters
         const distanceFrom = document.getElementById('distance-from')?.value;
         const distanceTo = document.getElementById('distance-to')?.value;
         
@@ -83,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Event listeners
     const searchInput = document.getElementById('race-search');
     const filterInputs = document.querySelectorAll('.filter-group select, .filter-group input');
 
@@ -98,6 +91,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Load initial races
     loadRaces();
 });

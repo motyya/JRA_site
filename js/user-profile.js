@@ -1,14 +1,13 @@
-// User Profile functionality
 class UserProfile {
     constructor() {
         this.init();
     }
 
+    // Запуск
     async init() {
-        // Wait for auth manager to be fully ready
         await this.waitForAuthManager();
         
-        if (this.currentUser) {
+        if (this.currentUser) { 
             console.log('User profile loading for:', this.currentUser.name);
             await this.loadUserProfile();
             await this.loadFavorites();
@@ -19,6 +18,7 @@ class UserProfile {
         }
     }
 
+
     waitForAuthManager() {
         return new Promise((resolve) => {
             const checkAuth = () => {
@@ -26,12 +26,10 @@ class UserProfile {
                     this.currentUser = window.authManager.getCurrentUser();
                     resolve();
                 } else if (window.authManager && !window.authManager.getCurrentUser()) {
-                    // Auth manager is ready but no user - redirect immediately
                     window.location.href = '/login';
                     return;
                 } else {
-                    // Auth manager not ready yet, check again
-                    setTimeout(checkAuth, 100);
+                    setTimeout(checkAuth, 50);
                 }
             };
             checkAuth();
@@ -40,15 +38,13 @@ class UserProfile {
 
     async loadUserProfile() {
         try {
-            console.log('Loading profile for user ID:', this.currentUser.id);
-            const response = await fetch(`http://localhost:3000/api/user/profile/${this.currentUser.id}`);
+            const response = await fetch(`${window.CONFIG.API_BASE}/user/profile/${this.currentUser.id}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const profile = await response.json();
-            console.log('Profile data:', profile);
             
             const profileInfo = document.getElementById('profileInfo');
             if (profileInfo) {
@@ -75,7 +71,7 @@ class UserProfile {
             await this.loadFavoriteHorses();
             await this.loadFavoriteRaces();
             await this.loadFavoriteRacecourses();
-            await this.loadRaceEntries(); // NEW: Load race entries
+            await this.loadRaceEntries();
         } catch (error) {
             console.error('Error loading favorites:', error);
         }
@@ -83,10 +79,9 @@ class UserProfile {
 
     async loadFavoriteHorses() {
         try {
-            const response = await fetch(`http://localhost:3000/api/user/favorites/horses/${this.currentUser.id}`);
+            const response = await fetch(`${window.CONFIG.API_BASE}/user/favorites/horses/${this.currentUser.id}`);
             
             if (!response.ok) {
-                console.log('No favorite horses found or error loading');
                 const container = document.getElementById('favoriteHorses');
                 if (container) {
                     container.innerHTML = '<p>No favorite horses yet. Add some from the horses page!</p>';
@@ -95,7 +90,6 @@ class UserProfile {
             }
             
             const horses = await response.json();
-            console.log('Favorite horses:', horses);
             
             const container = document.getElementById('favoriteHorses');
             if (container) {
@@ -129,10 +123,9 @@ class UserProfile {
 
     async loadFavoriteRaces() {
         try {
-            const response = await fetch(`http://localhost:3000/api/user/favorites/races/${this.currentUser.id}`);
+            const response = await fetch(`${window.CONFIG.API_BASE}/user/favorites/races/${this.currentUser.id}`);
             
             if (!response.ok) {
-                console.log('No favorite races found or error loading');
                 const container = document.getElementById('favoriteRaces');
                 if (container) {
                     container.innerHTML = '<p>No favorite races yet. Add some from the races page!</p>';
@@ -172,10 +165,9 @@ class UserProfile {
 
     async loadFavoriteRacecourses() {
         try {
-            const response = await fetch(`http://localhost:3000/api/user/favorites/racecourses/${this.currentUser.id}`);
+            const response = await fetch(`${window.CONFIG.API_BASE}/user/favorites/racecourses/${this.currentUser.id}`);
             
             if (!response.ok) {
-                console.log('No favorite racecourses found or error loading');
                 const container = document.getElementById('favoriteRacecourses');
                 if (container) {
                     container.innerHTML = '<p>No favorite racecourses yet. Add some from the racecourses page!</p>';
@@ -213,119 +205,11 @@ class UserProfile {
         }
     }
 
-    // NEW: Load race entries for the user
-    // async loadRaceEntries() {
-    //     try {
-    //         const response = await fetch(`http://localhost:3000/api/user/entries/${this.currentUser.id}`);
-            
-    //         if (!response.ok) {
-    //             console.log('No race entries found or error loading');
-    //             const container = document.getElementById('myRaceEntries');
-    //             if (container) {
-    //                 container.innerHTML = `
-    //                     <div class="empty-state">
-    //                         <h3>No Race Entries Yet</h3>
-    //                         <p>You haven't submitted any race entries.</p>
-    //                         <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
-    //                     </div>
-    //                 `;
-    //             }
-    //             return;
-    //         }
-            
-    //         const data = await response.json();
-    //         console.log('Race entries data:', data);
-            
-    //         const container = document.getElementById('myRaceEntries');
-    //         if (container) {
-    //             if (!data.entries || data.entries.length === 0) {
-    //                 container.innerHTML = `
-    //                     <div class="empty-state">
-    //                         <h3>No Race Entries Yet</h3>
-    //                         <p>You haven't submitted any race entries.</p>
-    //                         <a href="race-entry.html" class="btn-primary" style="margin-top: 1rem;">Submit Your First Entry</a>
-    //                     </div>
-    //                 `;
-    //                 return;
-    //             }
-
-    //             const entries = data.entries;
-    //             const pendingCount = entries.filter(e => e.status === 'pending').length;
-    //             const approvedCount = entries.filter(e => e.status === 'approved').length;
-    //             const rejectedCount = entries.filter(e => e.status === 'rejected').length;
-
-    //             container.innerHTML = `
-    //                 <div class="entries-stats">
-    //                     <div class="stat-card">
-    //                         <h4>Total Entries</h4>
-    //                         <p class="stat-number">${entries.length}</p>
-    //                     </div>
-    //                     <div class="stat-card">
-    //                         <h4>Pending</h4>
-    //                         <p class="stat-number pending">${pendingCount}</p>
-    //                     </div>
-    //                     <div class="stat-card">
-    //                         <h4>Approved</h4>
-    //                         <p class="stat-number approved">${approvedCount}</p>
-    //                     </div>
-    //                     ${rejectedCount > 0 ? `
-    //                     <div class="stat-card">
-    //                         <h4>Rejected</h4>
-    //                         <p class="stat-number rejected">${rejectedCount}</p>
-    //                     </div>
-    //                     ` : ''}
-    //                 </div>
-                    
-    //                 <div class="entries-table-container">
-    //                     <table class="entries-table">
-    //                         <thead>
-    //                             <tr>
-    //                                 <th>Race</th>
-    //                                 <th>Horse</th>
-    //                                 <th>Racecourse</th>
-    //                                 <th>Date</th>
-    //                                 <th>Saddlecloth</th>
-    //                                 <th>Barrier</th>
-    //                                 <th>Weight</th>
-    //                                 <th>Status</th>
-    //                                 <th>Submitted</th>
-    //                             </tr>
-    //                         </thead>
-    //                         <tbody>
-    //                             ${entries.map(entry => `
-    //                                 <tr>
-    //                                     <td><strong>${entry.race_name || 'Unknown Race'}</strong></td>
-    //                                     <td>${entry.horse_name || 'Unknown Horse'}</td>
-    //                                     <td>${entry.racecourse_name || '-'}</td>
-    //                                     <td>${entry.race_date ? new Date(entry.race_date).toLocaleDateString() : '-'}</td>
-    //                                     <td>${entry.saddlecloth}</td>
-    //                                     <td>${entry.barrier}</td>
-    //                                     <td>${entry.declared_weight}kg</td>
-    //                                     <td><span class="status-badge ${entry.status}">${entry.status}</span></td>
-    //                                     <td>${new Date(entry.created_at).toLocaleDateString()}</td>
-    //                                 </tr>
-    //                             `).join('')}
-    //                         </tbody>
-    //                     </table>
-    //                 </div>
-    //             `;
-    //         }
-    //     } catch (error) {
-    //         console.error('Error loading race entries:', error);
-    //         const container = document.getElementById('myRaceEntries');
-    //         if (container) {
-    //             container.innerHTML = '<p>Error loading race entries. Please try again later.</p>';
-    //         }
-    //     }
-    // }
     async loadRaceEntries() {
         try {
-            console.log('Loading race entries for user ID:', this.currentUser.id);
-            
-            const response = await fetch(`http://localhost:3000/api/user/entries/${this.currentUser.id}`);
+            const response = await fetch(`${window.CONFIG.API_BASE}/user/entries/${this.currentUser.id}`);
             
             if (!response.ok) {
-                console.log('No race entries found or error loading');
                 const container = document.getElementById('myRaceEntries');
                 if (container) {
                     container.innerHTML = `
@@ -340,7 +224,6 @@ class UserProfile {
             }
             
             const data = await response.json();
-            console.log('Race entries data received:', data);
             
             const container = document.getElementById('myRaceEntries');
             if (container) {
@@ -398,7 +281,6 @@ class UserProfile {
                             </thead>
                             <tbody>
                                 ${entries.map(entry => {
-                                    // Format created_at date
                                     const submittedDate = entry.created_at 
                                         ? new Date(entry.created_at).toLocaleDateString('en-US', {
                                             year: 'numeric',
@@ -448,11 +330,9 @@ class UserProfile {
             button.addEventListener('click', () => {
                 const tabName = button.dataset.tab;
                 
-                // Remove active class from all buttons and panes
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 tabPanes.forEach(pane => pane.classList.remove('active'));
                 
-                // Add active class to clicked button and corresponding pane
                 button.classList.add('active');
                 const targetPane = document.getElementById(`${tabName}-tab`);
                 if (targetPane) {
@@ -461,7 +341,6 @@ class UserProfile {
             });
         });
 
-        // Set first tab as active by default if none is active
         if (!document.querySelector('.tab-button.active')) {
             const firstButton = document.querySelector('.tab-button');
             const firstPane = document.querySelector('.tab-pane');
@@ -473,10 +352,8 @@ class UserProfile {
     }
 }
 
-// Initialize with delay to ensure auth manager is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing user profile...');
     setTimeout(() => {
         new UserProfile();
-    }, 500);
+    }, window.CONFIG.TIMEOUTS.PAGE_LOAD);
 });

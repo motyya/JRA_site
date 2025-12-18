@@ -1,9 +1,8 @@
-// Glossary page functionality
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('glossary-search');
     const terms = document.querySelectorAll('.glossary-term');
 
-    if (searchInput) {
+    if (searchInput && terms.length > 0) {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             

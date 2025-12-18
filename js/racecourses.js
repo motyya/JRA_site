@@ -1,8 +1,6 @@
-// Racecourses page functionality with API and favorites
 document.addEventListener('DOMContentLoaded', function() {
-    const API_BASE = 'http://localhost:3000/api';
+    const API_BASE = window.CONFIG.API_BASE;
 
-    // Load racecourses from API
     function loadRacecourses(filters = {}) {
         const queryParams = new URLSearchParams(filters).toString();
         
@@ -10,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(racecourses => {
                 displayRacecourses(racecourses);
-                // Add favorite buttons after racecourses are loaded
                 setTimeout(() => {
                     if (window.authManager) {
                         window.authManager.addFavoriteButtons();
@@ -19,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error loading racecourses:', error);
-                // Fallback to empty state
                 displayRacecourses([]);
             });
     }
@@ -43,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         racecourses.forEach(racecourse => {
             const row = document.createElement('tr');
-            row.dataset.racecourseId = racecourse.id;  // Add racecourse ID to row
+            row.dataset.racecourseId = racecourse.id;
             
             row.innerHTML = `
                 <td>
@@ -58,20 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             tbody.appendChild(row);
         });
-
-        // AFTER RACECOURSES ARE DISPLAYED, TRIGGER FAVORITE BUTTONS
-        setTimeout(() => {
-            if (window.authManager) {
-                window.authManager.addFavoriteButtonsToRacecourses();
-                // Also load existing favorites
-                if (window.authManager.currentUser) {
-                    window.authManager.loadExistingFavorites();
-                }
-            }
-        }, 100);
     }
 
-    // Filter functionality
     function getFilters() {
         const filters = {
             search: document.getElementById('racecourse-search')?.value || '',
@@ -80,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
             corners: document.getElementById('corners')?.value || ''
         };
 
-        // Add distance range filters
         const distanceFrom = document.getElementById('distance-from')?.value;
         const distanceTo = document.getElementById('distance-to')?.value;
         
@@ -90,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return filters;
     }
 
-    // Event listeners
     const searchInput = document.getElementById('racecourse-search');
     const filterInputs = document.querySelectorAll('.filter-group select, .filter-group input');
 
@@ -105,6 +87,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Load initial racecourses
     loadRacecourses();
 });

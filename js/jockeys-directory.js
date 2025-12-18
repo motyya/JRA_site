@@ -1,18 +1,14 @@
-// Jockeys Directory functionality - WITH ACTUAL RACE ENTRIES
 document.addEventListener('DOMContentLoaded', function() {
-    const API_BASE = 'http://localhost:3000/api';
+    const API_BASE = window.CONFIG.API_BASE;
     
-    // Load jockeys
     async function loadJockeys() {
         try {
             const response = await fetch(`${API_BASE}/jockeys/stats`);
             const data = await response.json();
             
-            // Update stats
             document.getElementById('totalJockeys').textContent = data.stats.totalJockeys || 0;
             document.getElementById('totalEntries').textContent = data.stats.totalEntries || 0;
             
-            // Display jockeys with actual race entries
             displayJockeys(data.jockeys);
             
         } catch (error) {
@@ -70,12 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return '<li class="entry-item">No detailed entry information available</li>';
         }
         
-        // Show actual race names from database
         let list = entries.map(entry => 
             `<li class="entry-item">${entry.race_name || 'Unknown Race'}</li>`
         ).join('');
         
-        // If there are more entries than we're showing
         const totalEntries = jockey.total_entries || 0;
         if (totalEntries > entries.length) {
             list += `<li class="entry-item">... and ${totalEntries - entries.length} more entries</li>`;
@@ -84,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return list;
     }
 
-    // Simple dropdown toggle
     window.toggleDropdown = function(id) {
         const dropdown = document.getElementById(id);
         const arrowId = 'arrow-' + id.split('-')[1];
@@ -99,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Search functionality
     const searchInput = document.getElementById('jockey-search');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
@@ -112,6 +104,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initial load
     loadJockeys();
 });

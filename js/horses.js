@@ -1,8 +1,6 @@
-// Horses page functionality with API and favorites
 document.addEventListener('DOMContentLoaded', function() {
-    const API_BASE = 'http://localhost:3000/api';
+    const API_BASE = window.CONFIG.API_BASE;
 
-    // Load horses from API
     function loadHorses(filters = {}) {
         const queryParams = new URLSearchParams(filters).toString();
         
@@ -10,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(horses => {
                 displayHorses(horses);
-                // Add favorite buttons after horses are loaded
                 setTimeout(() => {
                     if (window.authManager) {
                         window.authManager.addFavoriteButtons();
@@ -19,12 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error loading horses:', error);
-                // Fallback to empty state
                 displayHorses([]);
             });
     }
 
-    // In horses.js - update the displayHorses function:
     function displayHorses(horses) {
         const tbody = document.getElementById('horses-list');
         if (!tbody) return;
@@ -46,11 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             row.dataset.horseId = horse.id;
             
-            // Format achievements
             const achievements = [];
             if (horse.triple_crown) achievements.push('Triple Crown');
             if (horse.tiara_crown) achievements.push('Tiara Crown');
-            if (horse.other_achievements) achievements.push('Other');
             
             row.innerHTML = `
                 <td>
@@ -66,20 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             tbody.appendChild(row);
         });
-
-        // AFTER HORSES ARE DISPLAYED, TRIGGER FAVORITE BUTTONS
-        setTimeout(() => {
-            if (window.authManager) {
-                window.authManager.addFavoriteButtonsToHorses();
-                // Also load existing favorites
-                if (window.authManager.currentUser) {
-                    window.authManager.loadExistingFavorites();
-                }
-            }
-        }, 100);
     }
 
-    // Filter functionality
     function getFilters() {
         return {
             search: document.getElementById('horse-search')?.value || '',
@@ -94,12 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
             losses_from: document.getElementById('losses-from')?.value || '',
             losses_to: document.getElementById('losses-to')?.value || '',
             triple_crown: document.getElementById('triple-crown')?.checked || false,
-            tiara_crown: document.getElementById('tiara-crown')?.checked || false,
-            other_achievements: document.getElementById('other-achievements')?.checked || false
+            tiara_crown: document.getElementById('tiara-crown')?.checked || false
         };
     }
 
-    // Event listeners
     const searchInput = document.getElementById('horse-search');
     const filterInputs = document.querySelectorAll('.filter-group input, .filter-group select');
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -119,47 +98,5 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', () => loadHorses(getFilters()));
     });
 
-    // Number input validation
-    const numberInputs = document.querySelectorAll('input[type="number"]');
-    numberInputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            validateNumberInput(this);
-        });
-    });
-
-    function validateNumberInput(input) {
-        const value = parseInt(input.value);
-        const min = parseInt(input.min) || 0;
-        const max = parseInt(input.max) || 10000;
-
-        if (isNaN(value)) {
-            input.value = '';
-            return;
-        }
-
-        if (value < min) {
-            input.value = min;
-        } else if (value > max) {
-            input.value = max;
-        }
-
-        // Validate "from-to" pairs
-        const inputId = input.id;
-        if (inputId.includes('from')) {
-            const toId = inputId.replace('from', 'to');
-            const toInput = document.getElementById(toId);
-            if (toInput && toInput.value && parseInt(input.value) > parseInt(toInput.value)) {
-                toInput.value = input.value;
-            }
-        } else if (inputId.includes('to')) {
-            const fromId = inputId.replace('to', 'from');
-            const fromInput = document.getElementById(fromId);
-            if (fromInput && fromInput.value && parseInt(input.value) < parseInt(fromInput.value)) {
-                fromInput.value = input.value;
-            }
-        }
-    }
-
-    // Load initial horses
     loadHorses();
 });
