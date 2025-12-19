@@ -310,6 +310,37 @@ app.get('/api/available-horses', async (req, res) => {
     }
 });
 
+// Жокеи
+app.get('/api/jockeys', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, name, username, license_number, created_at FROM jockeys');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ипподромы
+app.get('/api/racecourses', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM racecourses');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Забеги
+app.get('/api/races', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM races');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Логин
 app.post('/api/auth/login', async (req, res) => {
     try {
