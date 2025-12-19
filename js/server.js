@@ -35,7 +35,6 @@ db.connect((err) => {
     }
     console.log('Connected to MySQL database');
 });
-
 // ========== HTML ROUTES ==========
 
 // Redirect root to /pages/
@@ -95,7 +94,6 @@ app.get('/training_centers', (req, res) => {
 
 // ========== API ROUTES ==========
 
-// Utility function for database queries
 const query = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (err, results) => {
