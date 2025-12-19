@@ -1,6 +1,7 @@
 const CONFIG = {
-    API_BASE: 'http://localhost:3000/api',
-    DEBUG: true, // логи ошибок 
+    // Используем относительный путь для Render
+    API_BASE: '/api',
+    DEBUG: true,
     TIMEOUTS: {
         AUTH_INIT: 100,
         PAGE_LOAD: 50
@@ -15,5 +16,4 @@ const CONFIG = {
     }
 };
 
-// глобал
 window.CONFIG = CONFIG;
