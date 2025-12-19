@@ -1,10 +1,10 @@
+const { Pool } = require('pg');
 const express = require('express');
-const mysql = require('mysql2');
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -17,86 +17,31 @@ app.use('/css', express.static(path.join(rootDir, 'css')));
 app.use('/js', express.static(path.join(rootDir, 'js')));
 app.use('/images', express.static(path.join(rootDir, 'images')));
 
-// MySQL
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'g2hyz5k',
-    database: 'jra_website'
+// PostgreSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
-// Коннект к MySQL
-db.connect((err) => {
+// Коннект к PostgreSQL
+pool.connect((err, client, release) => {
     if (err) {
         console.error('Database connection failed: ' + err.stack);
         return;
     }
-    console.log('Connected to MySQL database');
+    console.log('Connected to PostgreSQL database');
+    release();
 });
 
-// Пути хтмл
-app.get('/', (req, res) => {
-    res.redirect('/pages/');
-});
-
-app.get('/races', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'races.html'));
-});
-
-app.get('/horses', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'horses.html'));
-});
-
-app.get('/training', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'training_centers.html'));
-});
-
-app.get('/racecourses', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'racecourses.html'));
-});
-
-app.get('/jockeys', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'jockeys.html'));
-});
-
-app.get('/glossary', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'glossary.html'));
-});
-
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'register.html'));
-});
-
-app.get('/race-entry', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'race-entry.html'));
-});
-
-app.get('/user', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'user.html'));
-});
-
-app.get('/jockeys-directory', (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'jockeys-directory.html'));
-});
-
-app.get('/training_centers', (req, res) => {
-    res.redirect('/training');
-});
-
-// АПИ
 const query = (sql, params = []) => {
     return new Promise((resolve, reject) => {
-        db.query(sql, params, (err, results) => {
+        pool.query(sql, params, (err, results) => {
             if (err) {
                 console.error('Database error:', err.message);
                 reject({ error: 'Database error', details: err.message });
                 return;
             }
-            resolve(results);
+            resolve(results.rows);
         });
     });
 };
@@ -106,64 +51,76 @@ app.get('/api/horses', async (req, res) => {
     try {
         const { search, birth_year_from, birth_year_to, death_year_from, death_year_to,
                 races_from, races_to, wins_from, wins_to, losses_from, losses_to,
-                triple_crown, tiara_crown, other_achievements } = req.query;
+                triple_crown, tiara_crown } = req.query;
 
         let sql = 'SELECT * FROM horses WHERE 1=1';
         const params = [];
 
+        let paramCount = 1;
+
         if (search) {
-            sql += ' AND name LIKE ?';
+            sql += ` AND name LIKE $${paramCount}`;
             params.push(`%${search}%`);
+            paramCount++;
         }
 
         if (birth_year_from) {
-            sql += ' AND birth_year >= ?';
+            sql += ` AND birth_year >= $${paramCount}`;
             params.push(birth_year_from);
+            paramCount++;
         }
         if (birth_year_to) {
-            sql += ' AND birth_year <= ?';
+            sql += ` AND birth_year <= $${paramCount}`;
             params.push(birth_year_to);
+            paramCount++;
         }
 
         if (death_year_from) {
-            sql += ' AND death_year >= ?';
+            sql += ` AND death_year >= $${paramCount}`;
             params.push(death_year_from);
+            paramCount++;
         }
         if (death_year_to) {
-            sql += ' AND death_year <= ?';
+            sql += ` AND death_year <= $${paramCount}`;
             params.push(death_year_to);
+            paramCount++;
         }
 
         if (races_from) {
-            sql += ' AND total_races >= ?';
+            sql += ` AND total_races >= $${paramCount}`;
             params.push(races_from);
+            paramCount++;
         }
         if (races_to) {
-            sql += ' AND total_races <= ?';
+            sql += ` AND total_races <= $${paramCount}`;
             params.push(races_to);
+            paramCount++;
         }
 
         if (wins_from) {
-            sql += ' AND total_wins >= ?';
+            sql += ` AND total_wins >= $${paramCount}`;
             params.push(wins_from);
+            paramCount++;
         }
         if (wins_to) {
-            sql += ' AND total_wins <= ?';
+            sql += ` AND total_wins <= $${paramCount}`;
             params.push(wins_to);
+            paramCount++;
         }
 
         if (losses_from) {
-            sql += ' AND total_losses >= ?';
+            sql += ` AND total_losses >= $${paramCount}`;
             params.push(losses_from);
+            paramCount++;
         }
         if (losses_to) {
-            sql += ' AND total_losses <= ?';
+            sql += ` AND total_losses <= $${paramCount}`;
             params.push(losses_to);
+            paramCount++;
         }
 
         if (triple_crown === 'true') sql += ' AND triple_crown = TRUE';
         if (tiara_crown === 'true') sql += ' AND tiara_crown = TRUE';
-        if (other_achievements === 'true') sql += ' AND other_achievements = TRUE';
 
         sql += ' ORDER BY name';
 
@@ -176,7 +133,7 @@ app.get('/api/horses', async (req, res) => {
 
 app.get('/api/horses/:id', async (req, res) => {
     try {
-        const results = await query('SELECT * FROM horses WHERE id = ?', [req.params.id]);
+        const results = await query('SELECT * FROM horses WHERE id = $1', [req.params.id]);
         if (results.length === 0) {
             res.status(404).json({ error: 'Horse not found' });
             return;
@@ -199,35 +156,42 @@ app.get('/api/races', async (req, res) => {
             WHERE 1=1
         `;
         const params = [];
+        let paramCount = 1;
 
         if (search) {
-            sql += ' AND (r.name LIKE ? OR rc.name LIKE ?)';
+            sql += ` AND (r.name LIKE $${paramCount} OR rc.name LIKE $${paramCount + 1})`;
             params.push(`%${search}%`, `%${search}%`);
+            paramCount += 2;
         }
 
         if (racecourse) {
-            sql += ' AND rc.name = ?';
+            sql += ` AND rc.name = $${paramCount}`;
             params.push(racecourse);
+            paramCount++;
         }
 
         if (direction) {
-            sql += ' AND r.direction = ?';
+            sql += ` AND r.direction = $${paramCount}`;
             params.push(direction);
+            paramCount++;
         }
 
         if (season) {
-            sql += ' AND r.season = ?';
+            sql += ` AND r.season = $${paramCount}`;
             params.push(season);
+            paramCount++;
         }
 
         if (track) {
-            sql += ' AND r.track_type = ?';
+            sql += ` AND r.track_type = $${paramCount}`;
             params.push(track);
+            paramCount++;
         }
 
         if (rang) {
-            sql += ' AND r.rang = ?';
+            sql += ` AND r.rang = $${paramCount}`;
             params.push(rang);
+            paramCount++;
         }
 
         // Distance filtering
@@ -252,12 +216,14 @@ app.get('/api/races', async (req, res) => {
         const distanceTo = req.query.distance_to;
         
         if (distanceFrom) {
-            sql += ' AND r.distance >= ?';
+            sql += ` AND r.distance >= $${paramCount}`;
             params.push(distanceFrom);
+            paramCount++;
         }
         if (distanceTo) {
-            sql += ' AND r.distance <= ?';
+            sql += ` AND r.distance <= $${paramCount}`;
             params.push(distanceTo);
+            paramCount++;
         }
 
         sql += ' ORDER BY r.name';
@@ -276,37 +242,44 @@ app.get('/api/racecourses', async (req, res) => {
 
         let sql = 'SELECT * FROM racecourses WHERE 1=1';
         const params = [];
+        let paramCount = 1;
 
         if (search) {
-            sql += ' AND name LIKE ?';
+            sql += ` AND name LIKE $${paramCount}`;
             params.push(`%${search}%`);
+            paramCount++;
         }
 
         if (track) {
-            sql += ' AND track_types LIKE ?';
+            sql += ` AND track_types LIKE $${paramCount}`;
             params.push(`%${track}%`);
+            paramCount++;
         }
 
         if (direction) {
-            sql += ' AND direction = ?';
+            sql += ` AND direction = $${paramCount}`;
             params.push(direction);
+            paramCount++;
         }
 
         if (corners) {
-            sql += ' AND corners = ?';
+            sql += ` AND corners = $${paramCount}`;
             params.push(corners);
+            paramCount++;
         }
 
         const distanceFrom = req.query.distance_from;
         const distanceTo = req.query.distance_to;
         
         if (distanceFrom) {
-            sql += ' AND main_distance >= ?';
+            sql += ` AND main_distance >= $${paramCount}`;
             params.push(distanceFrom);
+            paramCount++;
         }
         if (distanceTo) {
-            sql += ' AND main_distance <= ?';
+            sql += ` AND main_distance <= $${paramCount}`;
             params.push(distanceTo);
+            paramCount++;
         }
 
         sql += ' ORDER BY name';
@@ -319,7 +292,6 @@ app.get('/api/racecourses', async (req, res) => {
 });
 
 // АПИ для рейс энтри
-// Доступные забеги
 app.get('/api/available-races', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM races ORDER BY name');
@@ -329,7 +301,6 @@ app.get('/api/available-races', async (req, res) => {
     }
 });
 
-// Доступные лошади
 app.get('/api/available-horses', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM horses ORDER BY name');
@@ -344,7 +315,7 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        const results = await query('SELECT * FROM jockeys WHERE username = ? AND password = ?', [username, password]);
+        const results = await query('SELECT * FROM jockeys WHERE username = $1 AND password = $2', [username, password]);
         
         if (results.length > 0) {
             const user = results[0];
@@ -370,20 +341,20 @@ app.post('/api/auth/register', async (req, res) => {
     try {
         const { fullName, username, password, licenseNumber } = req.body;
 
-        const existing = await query('SELECT id FROM jockeys WHERE username = ?', [username]);
+        const existing = await query('SELECT id FROM jockeys WHERE username = $1', [username]);
         
         if (existing.length > 0) {
             res.status(400).json({ success: false, message: 'Username already exists' });
             return;
         }
 
-        const sql = 'INSERT INTO jockeys (name, username, password, license_number) VALUES (?, ?, ?, ?)';
+        const sql = 'INSERT INTO jockeys (name, username, password, license_number) VALUES ($1, $2, $3, $4) RETURNING *';
         const result = await query(sql, [fullName, username, password, licenseNumber]);
         
         res.json({ 
             success: true, 
             user: {
-                id: result.insertId,
+                id: result[0].id,
                 name: fullName,
                 username: username
             }
@@ -398,90 +369,28 @@ app.post('/api/race-entries', async (req, res) => {
     try {
         const { jockeyName, licenseNumber, horseId, raceId, saddlecloth, barrier, declaredWeight } = req.body;
         
-        // Validation
         if (declaredWeight < 50 || declaredWeight > 70) {
             return res.status(400).json({ success: false, message: 'Weight must be between 50-70kg' });
         }
 
         const sql = `INSERT INTO race_entries (jockey_name, license_number, horse_id, race_id, saddlecloth, barrier, declared_weight, status) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`;
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending') RETURNING id`;
         
         const result = await query(sql, [jockeyName, licenseNumber, horseId, raceId, saddlecloth, barrier, declaredWeight]);
         
         res.json({ 
             success: true, 
-            entryId: result.insertId
+            entryId: result[0].id
         });
     } catch (error) {
         res.status(500).json({ error: 'Database error' });
     }
 });
 
-// Хендлеры избранного
-const favoritesHandlers = {
-    horses: {
-        table: 'user_favorite_horses',
-        joinTable: 'horses',
-        joinId: 'horse_id'
-    },
-    races: {
-        table: 'user_favorite_races',
-        joinTable: 'races',
-        joinId: 'race_id'
-    },
-    racecourses: {
-        table: 'user_favorite_racecourses',
-        joinTable: 'racecourses',
-        joinId: 'racecourse_id'
-    }
-};
-
-// Цикл для апи разных типов избранных 
-Object.keys(favoritesHandlers).forEach(type => {
-    const config = favoritesHandlers[type];
-    
-    app.post(`/api/user/favorites/${type}`, async (req, res) => {
-        try {
-            const { userId, [config.joinId]: itemId } = req.body;
-            const sql = `INSERT IGNORE INTO ${config.table} (user_id, ${config.joinId}) VALUES (?, ?)`;
-            await query(sql, [userId, itemId]);
-            res.json({ success: true });
-        } catch (error) {
-            res.status(500).json({ error: 'Database error' });
-        }
-    });
-    
-    app.delete(`/api/user/favorites/${type}`, async (req, res) => {
-        try {
-            const { userId, [config.joinId]: itemId } = req.body;
-            const sql = `DELETE FROM ${config.table} WHERE user_id = ? AND ${config.joinId} = ?`;
-            await query(sql, [userId, itemId]);
-            res.json({ success: true });
-        } catch (error) {
-            res.status(500).json({ error: 'Database error' });
-        }
-    });
-    
-    app.get(`/api/user/favorites/${type}/:userId`, async (req, res) => {
-        try {
-            const sql = `
-                SELECT t.* FROM ${config.joinTable} t
-                JOIN ${config.table} uf ON t.id = uf.${config.joinId}
-                WHERE uf.user_id = ?
-                ORDER BY uf.created_at DESC
-            `;
-            const results = await query(sql, [req.params.userId]);
-            res.json(results);
-        } catch (error) {
-            res.status(500).json({ error: 'Database error' });
-        }
-    });
-});
-
 // Профиль
 app.get('/api/user/profile/:userId', async (req, res) => {
     try {
-        const sql = 'SELECT id, name, username, license_number, created_at FROM jockeys WHERE id = ?';
+        const sql = 'SELECT id, name, username, license_number, created_at FROM jockeys WHERE id = $1';
         const results = await query(sql, [req.params.userId]);
         if (results.length === 0) {
             res.status(404).json({ error: 'User not found' });
@@ -493,115 +402,11 @@ app.get('/api/user/profile/:userId', async (req, res) => {
     }
 });
 
-app.get('/api/user/entries/:userId', async (req, res) => {
-    try {
-        const jockeyResults = await query('SELECT id, name, license_number FROM jockeys WHERE id = ?', [req.params.userId]);
-        
-        if (jockeyResults.length === 0) {
-            res.status(404).json({ error: 'Jockey not found' });
-            return;
-        }
-        
-        const jockey = jockeyResults[0];
-        
-        const entriesQuery = `
-            SELECT re.*, r.name as race_name, 
-                   h.name as horse_name, rc.name as racecourse_name
-            FROM race_entries re
-            LEFT JOIN races r ON re.race_id = r.id
-            LEFT JOIN horses h ON re.horse_id = h.id
-            LEFT JOIN racecourses rc ON r.racecourse_id = rc.id
-            WHERE re.license_number = ?
-            ORDER BY re.submitted_at DESC
-        `;
-        
-        const entries = await query(entriesQuery, [jockey.license_number]);
-        
-        res.json({
-            success: true,
-            jockey: jockey,
-            entries: entries
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// Список жокеев
-app.get('/api/jockeys/stats', async (req, res) => {
-    try {
-        const jockeysSql = `
-            SELECT 
-                j.*, 
-                COUNT(re.id) as total_entries
-            FROM jockeys j
-            LEFT JOIN race_entries re ON j.license_number = re.license_number
-            GROUP BY j.id
-            ORDER BY j.name ASC
-        `;
-        
-        const jockeys = await query(jockeysSql);
-        
-        const promises = jockeys.map(jockey => {
-            return new Promise(async (resolve) => {
-                const entriesSql = `
-                    SELECT re.*, r.name as race_name
-                    FROM race_entries re
-                    LEFT JOIN races r ON re.race_id = r.id
-                    WHERE re.license_number = ?
-                    ORDER BY re.submitted_at DESC
-                    LIMIT 10
-                `;
-                
-                try {
-                    const entries = await query(entriesSql, [jockey.license_number]);
-                    jockey.race_entries = entries;
-                } catch (err) {
-                    jockey.race_entries = [];
-                }
-                resolve(jockey);
-            });
-        });
-        
-        const completedJockeys = await Promise.all(promises);
-        const totalEntries = completedJockeys.reduce((sum, j) => sum + (parseInt(j.total_entries) || 0), 0);
-        
-        res.json({
-            jockeys: completedJockeys,
-            stats: {
-                totalJockeys: completedJockeys.length,
-                totalEntries: totalEntries
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// Отлавливание запросов к несуществующим АПИ
-app.use(/\/api\/.*/, (req, res) => {
-    res.status(404).json({ error: 'API endpoint not found' });
-});
-
 // Редирект на index.html
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(rootDir, 'pages', 'index.html'));
 });
 
-// Запуск (лог)
 app.listen(port, () => {
     console.log(`JRA Website running on http://localhost:${port}`);
-    console.log('Available pages:');
-    console.log('  - http://localhost:3000/ (redirects to /pages/)');
-    console.log('  - http://localhost:3000/pages/ (main site)');
-    console.log('  - http://localhost:3000/races');
-    console.log('  - http://localhost:3000/horses');
-    console.log('  - http://localhost:3000/training');
-    console.log('  - http://localhost:3000/racecourses');
-    console.log('  - http://localhost:3000/jockeys');
-    console.log('  - http://localhost:3000/jockeys-directory');
-    console.log('  - http://localhost:3000/login');
-    console.log('  - http://localhost:3000/register');
-    console.log('  - http://localhost:3000/race-entry');
-    console.log('  - http://localhost:3000/user');
 });
