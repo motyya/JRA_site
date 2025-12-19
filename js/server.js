@@ -4,18 +4,18 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-const rootDir = path.join(__dirname, '..');
+const rootDir = __dirname; // server.js в папке js
 
 // Папки
-app.use('/pages', express.static(path.join(rootDir, 'pages')));
-app.use('/css', express.static(path.join(rootDir, 'css')));
-app.use('/js', express.static(path.join(rootDir, 'js')));
-app.use('/images', express.static(path.join(rootDir, 'images')));
+app.use('/pages', express.static(path.join(rootDir, '../pages')));
+app.use('/css', express.static(path.join(rootDir, '../css')));
+app.use('/js', express.static(path.join(rootDir, '../js')));
+app.use('/images', express.static(path.join(rootDir, '../images')));
 
 // PostgreSQL
 const pool = new Pool({
@@ -46,6 +46,7 @@ const query = (sql, params = []) => {
     });
 };
 
+// === API ROUTES ===
 // Лошади
 app.get('/api/horses', async (req, res) => {
     try {
@@ -55,7 +56,6 @@ app.get('/api/horses', async (req, res) => {
 
         let sql = 'SELECT * FROM horses WHERE 1=1';
         const params = [];
-
         let paramCount = 1;
 
         if (search) {
@@ -194,7 +194,6 @@ app.get('/api/races', async (req, res) => {
             paramCount++;
         }
 
-        // Distance filtering
         if (distance_type) {
             switch (distance_type) {
                 case 'sprint':
@@ -291,7 +290,7 @@ app.get('/api/racecourses', async (req, res) => {
     }
 });
 
-// АПИ для рейс энтри
+// Доступные забеги
 app.get('/api/available-races', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM races ORDER BY name');
@@ -301,6 +300,7 @@ app.get('/api/available-races', async (req, res) => {
     }
 });
 
+// Доступные лошади
 app.get('/api/available-horses', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM horses ORDER BY name');
@@ -402,11 +402,15 @@ app.get('/api/user/profile/:userId', async (req, res) => {
     }
 });
 
-// Редирект на index.html
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(rootDir, 'pages', 'index.html'));
+app.use(/\/api\/.*/, (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
 });
 
-app.listen(port, () => {
-    console.log(`JRA Website running on http://localhost:${port}`);
+// Редирект на страницы
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(rootDir, '../pages', 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`JRA Website running on port ${PORT}`);
 });
