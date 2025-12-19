@@ -104,7 +104,7 @@ class AuthManager {
             fullName: formData.get('fullName'),
             username: formData.get('username'),
             password: formData.get('password'),
-            licenseNumber: formData.get('licenseNumber  ')
+            licenseNumber: formData.get('licenseNumber')
         };
 
         if (!this.validateRegistration(userData)) {
