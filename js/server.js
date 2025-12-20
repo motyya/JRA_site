@@ -18,16 +18,21 @@ app.use('/images', express.static(path.join(rootDir, '../images')));
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    // Увеличиваем таймаут на подключение
+    connectionTimeoutMillis: 10000,
+    // Уменьшаем время, через которое неиспользуемое соединение закрывается
+    idleTimeoutMillis: 30000,
+    // Максимальное время жизни соединения (меньше, чем таймаут Render)
+    maxLifetimeMillis: 1800000, // 30 минут
 });
 
-pool.connect((err, client, release) => {
+pool.query('SELECT NOW()', (err) => {
     if (err) {
-        console.error('Database connection failed: ' + err.stack);
-        return;
+        console.error('Database connection failed on startup:', err.message);
+    } else {
+        console.log('Database connection pool is ready');
     }
-    console.log('Connected to PostgreSQL database');
-    release();
 });
 
 const query = (sql, params = []) => {
