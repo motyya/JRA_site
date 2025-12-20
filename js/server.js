@@ -323,7 +323,7 @@ app.get('/api/jockeys', async (req, res) => {
 });
 
 // Статистика жокеев - ИСПРАВЛЕНО
-aapp.get('/api/jockeys/stats', async (req, res) => {
+app.get('/api/jockeys/stats', async (req, res) => {
   try {
     // 1. Статистика по жокеям
     const jockeysStats = await pool.query(`
