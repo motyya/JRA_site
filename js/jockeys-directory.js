@@ -60,19 +60,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getEntriesList(jockey) {
-        const entries = jockey.race_entries || [];
+        const raceNames = jockey.race_names || [];
         
-        if (entries.length === 0) {
+        if (raceNames.length === 0) {
             return '<li class="entry-item">No detailed entry information available</li>';
         }
         
-        let list = entries.map(entry => 
-            `<li class="entry-item">${entry.race_name || 'Unknown Race'}</li>`
+        let list = raceNames.slice(0, 5).map(raceName => 
+            `<li class="entry-item">${raceName || 'Unknown Race'}</li>`
         ).join('');
         
         const totalEntries = jockey.total_entries || 0;
-        if (totalEntries > entries.length) {
-            list += `<li class="entry-item">... and ${totalEntries - entries.length} more entries</li>`;
+        if (totalEntries > raceNames.length) {
+            list += `<li class="entry-item">... and ${totalEntries - raceNames.length} more entries</li>`;
         }
         
         return list;

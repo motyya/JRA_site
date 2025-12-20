@@ -323,7 +323,7 @@ app.get('/api/jockeys', async (req, res) => {
 });
 
 // Статистика жокеев - ИСПРАВЛЕНО
-app.get('/api/jockeys/stats', async (req, res) => {
+aapp.get('/api/jockeys/stats', async (req, res) => {
   try {
     // 1. Статистика по жокеям
     const jockeysStats = await pool.query(`
@@ -339,16 +339,20 @@ app.get('/api/jockeys/stats', async (req, res) => {
       FROM race_entries
     `);
 
-    // 3. Получаем всех жокеев с их заявками
+    // 3. Получаем всех жокеев с названиями их гонок
     const jockeys = await pool.query(`
       SELECT 
         j.id,
         j.name,
         j.license_number,
         j.created_at,
-        COUNT(re.id) as total_entries
+        COUNT(re.id) as total_entries,
+        ARRAY_AGG(
+          r.name ORDER BY re.created_at DESC
+        ) FILTER (WHERE r.name IS NOT NULL) as race_names
       FROM jockeys j
       LEFT JOIN race_entries re ON j.license_number = re.license_number
+      LEFT JOIN races r ON re.race_id = r.id
       GROUP BY j.id, j.name, j.license_number, j.created_at
       ORDER BY j.name
     `);
