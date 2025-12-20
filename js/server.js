@@ -397,7 +397,7 @@ app.get('/api/user/profile/:userId', async (req, res) => {
         res.status(500).json({ error: 'Database error' });
     }
 });
-
+//
 app.use(/\/api\/.*/, (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
