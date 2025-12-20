@@ -322,16 +322,45 @@ app.get('/api/jockeys', async (req, res) => {
   }
 });
 
-// Статистика жокеев
+// Статистика жокеев - ИСПРАВЛЕНО
 app.get('/api/jockeys/stats', async (req, res) => {
   try {
-    const result = await pool.query(`
+    // 1. Статистика по жокеям
+    const jockeysStats = await pool.query(`
       SELECT 
         COUNT(*) as "totalJockeys",
         COUNT(DISTINCT license_number) as "uniqueLicenses"
       FROM jockeys
     `);
-    res.json(result.rows[0]);
+
+    // 2. Статистика по заявкам
+    const entriesStats = await pool.query(`
+      SELECT COUNT(*) as "totalEntries"
+      FROM race_entries
+    `);
+
+    // 3. Получаем всех жокеев с их заявками
+    const jockeys = await pool.query(`
+      SELECT 
+        j.id,
+        j.name,
+        j.license_number,
+        j.created_at,
+        COUNT(re.id) as total_entries
+      FROM jockeys j
+      LEFT JOIN race_entries re ON j.license_number = re.license_number
+      GROUP BY j.id, j.name, j.license_number, j.created_at
+      ORDER BY j.name
+    `);
+
+    res.json({
+      stats: {
+        totalJockeys: parseInt(jockeysStats.rows[0].totalJockeys) || 0,
+        totalEntries: parseInt(entriesStats.rows[0].totalEntries) || 0
+      },
+      jockeys: jockeys.rows
+    });
+
   } catch (error) {
     console.error('Error fetching jockeys stats:', error);
     res.status(500).json({ error: 'Database error' });
@@ -428,6 +457,96 @@ app.get('/api/user/profile/:userId', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Database error' });
     }
+});
+
+// ===================== НОВЫЕ ENDPOINT'Ы ДЛЯ ЗАЯВОК =====================
+
+// Получить все заявки (для директории жокеев)
+app.get('/api/race-entries', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        re.*,
+        j.name as jockey_name,
+        j.license_number,
+        r.name as race_name,
+        h.name as horse_name
+      FROM race_entries re
+      LEFT JOIN jockeys j ON re.license_number = j.license_number
+      LEFT JOIN races r ON re.race_id = r.id
+      LEFT JOIN horses h ON re.horse_id = h.id
+      ORDER BY re.created_at DESC
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching race entries:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Получить заявки пользователя по его ID
+app.get('/api/user/entries/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // 1. Находим license_number пользователя
+    const userResult = await pool.query(
+      'SELECT license_number FROM jockeys WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const licenseNumber = userResult.rows[0].license_number;
+    
+    // 2. Находим все заявки этого пользователя
+    const entriesResult = await pool.query(`
+      SELECT 
+        re.*,
+        r.name as race_name,
+        h.name as horse_name
+      FROM race_entries re
+      LEFT JOIN races r ON re.race_id = r.id
+      LEFT JOIN horses h ON re.horse_id = h.id
+      WHERE re.license_number = $1
+      ORDER BY re.created_at DESC
+    `, [licenseNumber]);
+    
+    res.json({
+      entries: entriesResult.rows
+    });
+    
+  } catch (error) {
+    console.error('Error fetching user entries:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Получить заявки по номеру лицензии
+app.get('/api/race-entries/license/:licenseNumber', async (req, res) => {
+  try {
+    const licenseNumber = req.params.licenseNumber;
+    
+    const result = await pool.query(`
+      SELECT 
+        re.*,
+        r.name as race_name,
+        h.name as horse_name
+      FROM race_entries re
+      LEFT JOIN races r ON re.race_id = r.id
+      LEFT JOIN horses h ON re.horse_id = h.id
+      WHERE re.license_number = $1
+      ORDER BY re.created_at DESC
+    `, [licenseNumber]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching entries by license:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 // ===================== ENDPOINTS ДЛЯ ИЗБРАННОГО (FAVORITES) ======================
