@@ -322,6 +322,24 @@ app.get('/api/jockeys', async (req, res) => {
   }
 });
 
+// Статистика жокеев
+app.get('/api/jockeys/stats', async (req, res) => {
+  try {
+    // Пример запроса, возвращает общее количество жокеев
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*) as totalJockeys,
+        COUNT(DISTINCT license_number) as uniqueLicenses
+      FROM jockeys
+    `);
+    // Возвращаем объект с нужными полями
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching jockeys stats:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Логин
 app.post('/api/auth/login', async (req, res) => {
     try {
