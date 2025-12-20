@@ -16,17 +16,16 @@ app.use('/css', express.static(path.join(rootDir, '../css')));
 app.use('/js', express.static(path.join(rootDir, '../js')));
 app.use('/images', express.static(path.join(rootDir, '../images')));
 
+// ========== НАСТРОЙКА ПУЛА СОЕДИНЕНИЙ С БАЗОЙ ==========
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
-    // Увеличиваем таймаут на подключение
     connectionTimeoutMillis: 10000,
-    // Уменьшаем время, через которое неиспользуемое соединение закрывается
     idleTimeoutMillis: 30000,
-    // Максимальное время жизни соединения (меньше, чем таймаут Render)
-    maxLifetimeMillis: 1800000, // 30 минут
+    maxLifetimeMillis: 1800000,
 });
 
+// Проверка подключения при старте
 pool.query('SELECT NOW()', (err) => {
     if (err) {
         console.error('Database connection failed on startup:', err.message);
@@ -48,6 +47,9 @@ const query = (sql, params = []) => {
     });
 };
 
+// ===================== API ROUTES ======================
+
+// Лошади
 app.get('/api/horses', async (req, res) => {
     try {
         const { search, birth_year_from, birth_year_to, death_year_from, death_year_to,
@@ -144,6 +146,7 @@ app.get('/api/horses/:id', async (req, res) => {
     }
 });
 
+// Забеги
 app.get('/api/races', async (req, res) => {
     try {
         const { search, racecourse, direction, season, track, distance_type, rang } = req.query;
@@ -233,6 +236,7 @@ app.get('/api/races', async (req, res) => {
     }
 });
 
+// Ипподромы
 app.get('/api/racecourses', async (req, res) => {
     try {
         const { search, track, direction, corners } = req.query;
@@ -288,6 +292,7 @@ app.get('/api/racecourses', async (req, res) => {
     }
 });
 
+// Доступные забеги
 app.get('/api/available-races', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM races ORDER BY name');
@@ -297,6 +302,7 @@ app.get('/api/available-races', async (req, res) => {
     }
 });
 
+// Доступные лошади
 app.get('/api/available-horses', async (req, res) => {
     try {
         const results = await query('SELECT id, name FROM horses ORDER BY name');
@@ -306,6 +312,7 @@ app.get('/api/available-horses', async (req, res) => {
     }
 });
 
+// Жокеи
 app.get('/api/jockeys', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, name, username, license_number, created_at FROM jockeys');
@@ -315,6 +322,7 @@ app.get('/api/jockeys', async (req, res) => {
   }
 });
 
+// Логин
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -340,6 +348,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// Регистрация
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { fullName, username, password, licenseNumber } = req.body;
@@ -367,6 +376,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
+// Анкета на участие
 app.post('/api/race-entries', async (req, res) => {
     try {
         const { jockeyName, licenseNumber, horseId, raceId, saddlecloth, barrier, declaredWeight } = req.body;
@@ -389,6 +399,7 @@ app.post('/api/race-entries', async (req, res) => {
     }
 });
 
+// Профиль
 app.get('/api/user/profile/:userId', async (req, res) => {
     try {
         const sql = 'SELECT id, name, username, license_number, created_at FROM jockeys WHERE id = $1';
@@ -402,7 +413,152 @@ app.get('/api/user/profile/:userId', async (req, res) => {
         res.status(500).json({ error: 'Database error' });
     }
 });
-//
+
+// ===================== ENDPOINTS ДЛЯ ИЗБРАННОГО (FAVORITES) ======================
+
+// 1. Получить избранных лошадей для пользователя
+app.get('/api/user/favorites/horses/:userId', async (req, res) => {
+    try {
+        const sql = `
+            SELECT h.* 
+            FROM user_favorite_horses ufh
+            JOIN horses h ON ufh.horse_id = h.id
+            WHERE ufh.user_id = $1
+        `;
+        const results = await query(sql, [req.params.userId]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching favorite horses:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// 2. Получить избранные забеги для пользователя
+app.get('/api/user/favorites/races/:userId', async (req, res) => {
+    try {
+        const sql = `
+            SELECT r.* 
+            FROM user_favorite_races ufr
+            JOIN races r ON ufr.race_id = r.id
+            WHERE ufr.user_id = $1
+        `;
+        const results = await query(sql, [req.params.userId]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching favorite races:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// 3. Получить избранные ипподромы для пользователя
+app.get('/api/user/favorites/racecourses/:userId', async (req, res) => {
+    try {
+        const sql = `
+            SELECT rc.* 
+            FROM user_favorite_racecourses ufrc
+            JOIN racecourses rc ON ufrc.racecourse_id = rc.id
+            WHERE ufrc.user_id = $1
+        `;
+        const results = await query(sql, [req.params.userId]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching favorite racecourses:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// 4. Добавить/удалить лошадь в избранное
+app.post('/api/user/favorites/horses', async (req, res) => {
+    try {
+        const { userId, horseId } = req.body;
+        const sql = `
+            INSERT INTO user_favorite_horses (user_id, horse_id) 
+            VALUES ($1, $2) 
+            ON CONFLICT (user_id, horse_id) DO NOTHING
+            RETURNING id
+        `;
+        const result = await query(sql, [userId, horseId]);
+        res.json({ success: true, favoriteId: result[0]?.id });
+    } catch (error) {
+        console.error('Error adding favorite horse:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.delete('/api/user/favorites/horses', async (req, res) => {
+    try {
+        const { userId, horseId } = req.body;
+        const sql = `DELETE FROM user_favorite_horses WHERE user_id = $1 AND horse_id = $2`;
+        await query(sql, [userId, horseId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error removing favorite horse:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+// 5. Добавить/удалить забег в избранное
+app.post('/api/user/favorites/races', async (req, res) => {
+    try {
+        const { userId, raceId } = req.body;
+        const sql = `
+            INSERT INTO user_favorite_races (user_id, race_id) 
+            VALUES ($1, $2) 
+            ON CONFLICT (user_id, race_id) DO NOTHING
+            RETURNING id
+        `;
+        const result = await query(sql, [userId, raceId]);
+        res.json({ success: true, favoriteId: result[0]?.id });
+    } catch (error) {
+        console.error('Error adding favorite race:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.delete('/api/user/favorites/races', async (req, res) => {
+    try {
+        const { userId, raceId } = req.body;
+        const sql = `DELETE FROM user_favorite_races WHERE user_id = $1 AND race_id = $2`;
+        await query(sql, [userId, raceId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error removing favorite race:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+// 6. Добавить/удалить ипподром в избранное
+app.post('/api/user/favorites/racecourses', async (req, res) => {
+    try {
+        const { userId, racecourseId } = req.body;
+        const sql = `
+            INSERT INTO user_favorite_racecourses (user_id, racecourse_id) 
+            VALUES ($1, $2) 
+            ON CONFLICT (user_id, racecourse_id) DO NOTHING
+            RETURNING id
+        `;
+        const result = await query(sql, [userId, racecourseId]);
+        res.json({ success: true, favoriteId: result[0]?.id });
+    } catch (error) {
+        console.error('Error adding favorite racecourse:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.delete('/api/user/favorites/racecourses', async (req, res) => {
+    try {
+        const { userId, racecourseId } = req.body;
+        const sql = `DELETE FROM user_favorite_racecourses WHERE user_id = $1 AND racecourse_id = $2`;
+        await query(sql, [userId, racecourseId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error removing favorite racecourse:', error);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+// ===================== ФИНАЛЬНЫЕ ОБРАБОТЧИКИ ======================
+
 app.use(/\/api\/.*/, (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
