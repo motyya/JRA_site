@@ -1,5 +1,4 @@
 const CONFIG = {
-    // Используем относительный путь для Render
     API_BASE: '/api',
     DEBUG: true,
     TIMEOUTS: {

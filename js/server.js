@@ -16,7 +16,7 @@ app.use('/css', express.static(path.join(rootDir, '../css')));
 app.use('/js', express.static(path.join(rootDir, '../js')));
 app.use('/images', express.static(path.join(rootDir, '../images')));
 
-// ========== НАСТРОЙКА ПУЛА СОЕДИНЕНИЙ С БАЗОЙ ==========
+// Пул, соед с базой
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -47,7 +47,7 @@ const query = (sql, params = []) => {
     });
 };
 
-// ===================== API ROUTES ======================
+// Апи-шки
 
 // Лошади
 app.get('/api/horses', async (req, res) => {
@@ -322,10 +322,10 @@ app.get('/api/jockeys', async (req, res) => {
   }
 });
 
-// Статистика жокеев - ИСПРАВЛЕНО
+// Статистика жокеев
 app.get('/api/jockeys/stats', async (req, res) => {
   try {
-    // 1. Статистика по жокеям
+    // Статистика конкретно по жокеям
     const jockeysStats = await pool.query(`
       SELECT 
         COUNT(*) as "totalJockeys",
@@ -333,13 +333,13 @@ app.get('/api/jockeys/stats', async (req, res) => {
       FROM jockeys
     `);
 
-    // 2. Статистика по заявкам
+    // Статистика заявок
     const entriesStats = await pool.query(`
       SELECT COUNT(*) as "totalEntries"
       FROM race_entries
     `);
 
-    // 3. Получаем всех жокеев с названиями их гонок
+    // Пул всех жокеев + их заявок
     const jockeys = await pool.query(`
       SELECT 
         j.id,
@@ -463,8 +463,6 @@ app.get('/api/user/profile/:userId', async (req, res) => {
     }
 });
 
-// ===================== НОВЫЕ ENDPOINT'Ы ДЛЯ ЗАЯВОК =====================
-
 // Получить все заявки (для директории жокеев)
 app.get('/api/race-entries', async (req, res) => {
   try {
@@ -494,7 +492,7 @@ app.get('/api/user/entries/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
     
-    // 1. Находим license_number пользователя
+    // license_number пользователя
     const userResult = await pool.query(
       'SELECT license_number FROM jockeys WHERE id = $1',
       [userId]
@@ -506,7 +504,7 @@ app.get('/api/user/entries/:userId', async (req, res) => {
     
     const licenseNumber = userResult.rows[0].license_number;
     
-    // 2. Находим все заявки этого пользователя
+    // Все заявки пользователя по license_number
     const entriesResult = await pool.query(`
       SELECT 
         re.*,
@@ -529,7 +527,7 @@ app.get('/api/user/entries/:userId', async (req, res) => {
   }
 });
 
-// Получить заявки по номеру лицензии
+// Получить заявки по license_number
 app.get('/api/race-entries/license/:licenseNumber', async (req, res) => {
   try {
     const licenseNumber = req.params.licenseNumber;
@@ -553,9 +551,7 @@ app.get('/api/race-entries/license/:licenseNumber', async (req, res) => {
   }
 });
 
-// ===================== ENDPOINTS ДЛЯ ИЗБРАННОГО (FAVORITES) ======================
-
-// 1. Получить избранных лошадей для пользователя
+// Избранные лошади 
 app.get('/api/user/favorites/horses/:userId', async (req, res) => {
     try {
         const sql = `
@@ -572,7 +568,7 @@ app.get('/api/user/favorites/horses/:userId', async (req, res) => {
     }
 });
 
-// 2. Получить избранные забеги для пользователя
+// Избранные забеги 
 app.get('/api/user/favorites/races/:userId', async (req, res) => {
     try {
         const sql = `
@@ -589,7 +585,7 @@ app.get('/api/user/favorites/races/:userId', async (req, res) => {
     }
 });
 
-// 3. Получить избранные ипподромы для пользователя
+// Избранные ипподромы
 app.get('/api/user/favorites/racecourses/:userId', async (req, res) => {
     try {
         const sql = `
@@ -606,7 +602,7 @@ app.get('/api/user/favorites/racecourses/:userId', async (req, res) => {
     }
 });
 
-// 4. Добавить/удалить лошадь в избранное
+// Добавление удаление в избранное
 app.post('/api/user/favorites/horses', async (req, res) => {
     try {
         const { userId, horseId } = req.body;
@@ -636,7 +632,6 @@ app.delete('/api/user/favorites/horses', async (req, res) => {
     }
 });
 
-// 5. Добавить/удалить забег в избранное
 app.post('/api/user/favorites/races', async (req, res) => {
     try {
         const { userId, raceId } = req.body;
@@ -666,7 +661,6 @@ app.delete('/api/user/favorites/races', async (req, res) => {
     }
 });
 
-// 6. Добавить/удалить ипподром в избранное
 app.post('/api/user/favorites/racecourses', async (req, res) => {
     try {
         const { userId, racecourseId } = req.body;
@@ -696,8 +690,7 @@ app.delete('/api/user/favorites/racecourses', async (req, res) => {
     }
 });
 
-// ===================== ФИНАЛЬНЫЕ ОБРАБОТЧИКИ ======================
-
+// Финальные обработчики
 app.use(/\/api\/.*/, (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });

@@ -3,7 +3,6 @@ class UserProfile {
         this.init();
     }
 
-    // Запуск
     async init() {
         await this.waitForAuthManager();
         
